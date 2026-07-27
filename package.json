@@ -7,6 +7,7 @@
     "packages/*"
   ],
   "scripts": {
+    "setup": "./setup.sh",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",

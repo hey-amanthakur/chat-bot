@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "uvicorn app.main:app --reload --port 8000",
+    "setup": "../setup-python.sh",
+    "dev": ".venv/bin/uvicorn app.main:app --reload --port 8000",
     "lint": "eslint \"{app,tests}/**/*.py\" --fix",
     "format": "prettier --write \"{app,tests}/**/*.py\"",
-    "test": "pytest",
-    "test:watch": "pytest-watch",
+    "test": ".venv/bin/pytest",
+    "test:watch": ".venv/bin/pytest-watch",
     "clean": "find . -type d -name __pycache__ -exec rm -rf {} + || true"
   },
   "dependencies": {
