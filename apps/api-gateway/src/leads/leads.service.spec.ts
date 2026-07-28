@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LeadsService } from './leads.service';
 import * as fs from 'fs';
-import * as path from 'path';
 
 jest.mock('fs');
 
@@ -70,10 +69,16 @@ describe('LeadsService', () => {
       (fs.writeFileSync as jest.Mock).mockReturnValue(undefined);
 
       const lead1 = await service.createLead({
-        clientId: 'c1', name: 'A', reason: 'r', conversationId: 'conv1',
+        clientId: 'c1',
+        name: 'A',
+        reason: 'r',
+        conversationId: 'conv1',
       });
       const lead2 = await service.createLead({
-        clientId: 'c1', name: 'B', reason: 'r', conversationId: 'conv2',
+        clientId: 'c1',
+        name: 'B',
+        reason: 'r',
+        conversationId: 'conv2',
       });
 
       expect(lead1.id).not.toBe(lead2.id);

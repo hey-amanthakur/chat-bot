@@ -36,11 +36,7 @@ describe('ChatController', () => {
         { ip: '127.0.0.1' },
       );
 
-      expect(mockChatService.processMessage).toHaveBeenCalledWith(
-        'client1',
-        'Hello',
-        '127.0.0.1',
-      );
+      expect(mockChatService.processMessage).toHaveBeenCalledWith('client1', 'Hello', '127.0.0.1');
       expect(result.response).toBe('Hi!');
     });
 
@@ -56,11 +52,7 @@ describe('ChatController', () => {
         { ip: '127.0.0.1' },
       );
 
-      expect(mockChatService.processMessage).toHaveBeenCalledWith(
-        'c1',
-        'Hi',
-        'custom-session',
-      );
+      expect(mockChatService.processMessage).toHaveBeenCalledWith('c1', 'Hi', 'custom-session');
     });
 
     it('should fall back to req.ip when sessionId is not provided', async () => {
@@ -70,16 +62,9 @@ describe('ChatController', () => {
         session_id: 'ip-based',
       });
 
-      await controller.chat(
-        { clientId: 'c1', message: 'Hi' },
-        { ip: '192.168.1.1' },
-      );
+      await controller.chat({ clientId: 'c1', message: 'Hi' }, { ip: '192.168.1.1' });
 
-      expect(mockChatService.processMessage).toHaveBeenCalledWith(
-        'c1',
-        'Hi',
-        '192.168.1.1',
-      );
+      expect(mockChatService.processMessage).toHaveBeenCalledWith('c1', 'Hi', '192.168.1.1');
     });
   });
 });

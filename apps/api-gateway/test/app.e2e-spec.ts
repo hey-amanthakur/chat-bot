@@ -22,16 +22,19 @@ describe('ChatBot E2E', () => {
     process.env.OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
     process.env.JWT_SECRET = 'test-jwt-secret-32-chars-long-!!';
     process.env.ADMIN_EMAIL = 'admin@test.com';
-    process.env.ADMIN_PASSWORD_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHJKLMNPQRSTUVWXYZ12345678';
+    process.env.ADMIN_PASSWORD_HASH =
+      '$2b$10$abcdefghijklmnopqrstuuABCDEFGHJKLMNPQRSTUVWXYZ12345678';
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(HttpService)
       .useValue({
-        post: jest.fn().mockReturnValue(
-          of(mockOpenRouterResponse('We offer dental services including checkups and cleaning.')),
-        ),
+        post: jest
+          .fn()
+          .mockReturnValue(
+            of(mockOpenRouterResponse('We offer dental services including checkups and cleaning.')),
+          ),
       })
       .compile();
 
@@ -124,10 +127,7 @@ describe('ChatBot E2E', () => {
     });
 
     it('POST /api/chat - rejects missing clientId', () => {
-      return request(app.getHttpServer())
-        .post('/api/chat')
-        .send({ message: 'Hello' })
-        .expect(400);
+      return request(app.getHttpServer()).post('/api/chat').send({ message: 'Hello' }).expect(400);
     });
 
     it('POST /api/chat - rejects missing message', () => {

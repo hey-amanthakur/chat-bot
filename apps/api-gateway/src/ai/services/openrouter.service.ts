@@ -23,8 +23,7 @@ export class OpenRouterService {
   buildSystemPrompt(kb: Record<string, any>): string {
     const businessName = kb.name || 'this business';
     const tone = kb.tone || 'friendly';
-    const greeting =
-      kb.greeting || `Hi! Welcome to ${businessName}. How can I help you today?`;
+    const greeting = kb.greeting || `Hi! Welcome to ${businessName}. How can I help you today?`;
 
     const servicesText = (kb.services || [])
       .map((s: any) => `- ${s.name}: ${s.price} (${s.description})`)

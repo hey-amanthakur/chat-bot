@@ -64,9 +64,7 @@ describe('OpenRouterService', () => {
     it('should include services', () => {
       const kb = {
         name: 'X',
-        services: [
-          { name: 'Haircut', price: '$45', description: 'Professional cut' },
-        ],
+        services: [{ name: 'Haircut', price: '$45', description: 'Professional cut' }],
       };
       const prompt = service.buildSystemPrompt(kb);
       expect(prompt).toContain('Haircut');
@@ -206,9 +204,7 @@ describe('OpenRouterService', () => {
     });
 
     it('should handle network errors gracefully', async () => {
-      mockHttpService.post.mockReturnValue(
-        throwError(() => new Error('Network timeout')),
-      );
+      mockHttpService.post.mockReturnValue(throwError(() => new Error('Network timeout')));
 
       const result = await service.chatCompletion('Hi', 'c1', {});
       expect(result).toContain('trouble connecting');

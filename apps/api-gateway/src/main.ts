@@ -9,9 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const isDev = process.env.NODE_ENV !== 'production';
-  const allowedOrigins = isDev
-    ? true
-    : (process.env.ALLOWED_ORIGINS?.split(',') || []);
+  const allowedOrigins = isDev ? true : process.env.ALLOWED_ORIGINS?.split(',') || [];
 
   app.enableCors({
     origin: isDev ? true : allowedOrigins,

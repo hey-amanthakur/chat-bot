@@ -49,7 +49,7 @@ export class RagService {
     return { ...DEFAULT_KB };
   }
 
-  retrieveContext(kb: Record<string, any>, query: string): string {
+  retrieveContext(kb: Record<string, any>, _query: string): string {
     const contextParts: string[] = [];
 
     if (kb.services?.length) {
@@ -60,16 +60,12 @@ export class RagService {
     }
 
     if (kb.faqs?.length) {
-      const faqs = kb.faqs
-        .map((f: any) => `Q: ${f.question}\nA: ${f.answer}`)
-        .join('\n');
+      const faqs = kb.faqs.map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join('\n');
       contextParts.push(`FAQS:\n${faqs}`);
     }
 
     if (kb.hours?.length) {
-      const hours = kb.hours
-        .map((h: any) => `- ${h.day}: ${h.open} - ${h.close}`)
-        .join('\n');
+      const hours = kb.hours.map((h: any) => `- ${h.day}: ${h.open} - ${h.close}`).join('\n');
       contextParts.push(`HOURS:\n${hours}`);
     }
 

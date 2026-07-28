@@ -1,6 +1,5 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { RagService } from './ai/services/rag.service';
 
 export const CLIENTS_DATA = 'CLIENTS_DATA';
 

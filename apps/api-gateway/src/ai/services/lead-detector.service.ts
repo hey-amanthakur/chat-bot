@@ -34,16 +34,12 @@ export class LeadDetectorService {
     'my name is',
   ];
 
-  async detect(message: string, context: string = ''): Promise<LeadDetection> {
+  async detect(message: string, _context: string = ''): Promise<LeadDetection> {
     const messageLower = message.toLowerCase();
 
-    const keywordMatches = this.LEAD_KEYWORDS.filter((kw) =>
-      messageLower.includes(kw),
-    ).length;
+    const keywordMatches = this.LEAD_KEYWORDS.filter((kw) => messageLower.includes(kw)).length;
 
-    const patternMatches = this.LEAD_PATTERNS.filter((p) =>
-      messageLower.includes(p),
-    ).length;
+    const patternMatches = this.LEAD_PATTERNS.filter((p) => messageLower.includes(p)).length;
 
     const confidence = Math.min(keywordMatches * 0.15 + patternMatches * 0.3, 1.0);
 

@@ -55,17 +55,17 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException for wrong email', async () => {
-      await expect(
-        service.login('wrong@test.com', 'password123'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.login('wrong@test.com', 'password123')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw UnauthorizedException for wrong password', async () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(
-        service.login('admin@test.com', 'wrongpassword'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.login('admin@test.com', 'wrongpassword')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should compare password with stored hash', async () => {

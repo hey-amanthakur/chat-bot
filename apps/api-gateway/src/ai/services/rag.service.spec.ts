@@ -15,10 +15,7 @@ describe('RagService', () => {
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        RagService,
-        { provide: ConfigService, useValue: mockConfigService },
-      ],
+      providers: [RagService, { provide: ConfigService, useValue: mockConfigService }],
     }).compile();
 
     service = module.get<RagService>(RagService);
@@ -70,7 +67,7 @@ describe('RagService', () => {
     it('should return default KB when config.json does not exist', async () => {
       mockConfigService.get.mockReturnValue('/mock/data');
       (fs.existsSync as jest.Mock)
-        .mockReturnValueOnce(true)  // client dir exists
+        .mockReturnValueOnce(true) // client dir exists
         .mockReturnValueOnce(false); // config.json doesn't exist
 
       const result = await service.getKnowledgeBase('no-config-client');
