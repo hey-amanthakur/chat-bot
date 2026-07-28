@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -83,9 +84,11 @@ async function bootstrap(config: ChatBotConfig) {
     }),
   );
 
-  // Serve widget files
-  const widgetDist = join(__dirname, '..', 'dist');
-  app.useStaticAssets(widgetDist, { prefix: '/widgets/' });
+  // Serve widget files — use __dirname so it works when installed as npm package
+  const widgetDist = join(__dirname, '..', 'widgets');
+  if (existsSync(widgetDist)) {
+    app.useStaticAssets(widgetDist, { prefix: '/widgets/' });
+  }
 
   app.setGlobalPrefix('api');
 

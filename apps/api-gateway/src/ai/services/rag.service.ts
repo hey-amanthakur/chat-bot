@@ -20,9 +20,10 @@ export class RagService {
   private memoryClients: Record<string, Record<string, any>> = {};
 
   constructor(private readonly configService: ConfigService) {
+    // DATA_DIR env var → package-relative path → CWD-relative (dev fallback)
     this.dataDir =
       this.configService.get<string>('DATA_DIR') ||
-      path.join(process.cwd(), '..', '..', 'data', 'clients');
+      path.join(__dirname, '..', '..', '..', 'data', 'clients');
   }
 
   setClients(clients: Record<string, Record<string, any>>) {
