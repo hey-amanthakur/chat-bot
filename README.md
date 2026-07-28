@@ -1,20 +1,20 @@
-# amanthakur-chat-bot
+# @hey-amanthakur/chat-bot
 
 Embeddable AI chatbot for local businesses. Install, configure, done.
 
-[![npm](https://img.shields.io/npm/v/amanthakur-chat-bot)](https://www.npmjs.com/package/amanthakur-chat-bot)
-[![license](https://img.shields.io/npm/l/amanthakur-chat-bot)](https://github.com/hey-amanthakur/chat-bot/blob/master/LICENSE)
+[![npm](https://img.shields.io/npm/v/@hey-amanthakur/chat-bot)](https://www.npmjs.com/package/@hey-amanthakur/chat-bot)
+[![license](https://img.shields.io/npm/l/@hey-amanthakur/chat-bot)](https://github.com/hey-amanthakur/chat-bot/blob/master/LICENSE)
 
 ## Install
 
 ```bash
-npm install amanthakur-chat-bot
+npm install @hey-amanthakur/chat-bot
 ```
 
 ## Quick Start
 
 ```js
-import { ChatBot } from 'amanthakur-chat-bot';
+import { ChatBot } from '@hey-amanthakur/chat-bot';
 
 ChatBot.start({
   port: 3000,
@@ -95,7 +95,7 @@ The chat bubble appears on your page. That's it.
 ## ES Module Usage
 
 ```js
-import ChatWidget from 'amanthakur-chat-bot/widget.esm';
+import ChatWidget from '@hey-amanthakur/chat-bot/widget.esm';
 
 new ChatWidget({
   clientId: 'my-business',
