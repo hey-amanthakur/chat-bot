@@ -98,3 +98,28 @@ JWT_SECRET=<random-32-byte-hex>
 - **Client data:** Stored in `data/clients/{client-slug}/config.json`
 - **DTOs:** Always use class-validator
 - **Client IDs:** Use slugs like `dr-smith-dental`, not UUIDs
+
+## Codebase Analysis — Fallow
+
+Run [Fallow](https://fallow.mintlify.app/) before committing to catch dead code, unused deps, duplication, and complexity hotspots.
+
+```bash
+# Full analysis (dead code + duplication + complexity + health)
+npx fallow
+
+# Targeted analysis
+npx fallow dead-code     # Unused files, exports, dependencies
+npx fallow dupes         # Copy-pasted code blocks
+npx fallow health        # Complexity, maintainability, hotspots
+
+# Auto-fix unused exports and dependencies
+npx fallow fix --dry-run # Preview changes
+npx fallow fix           # Apply changes
+```
+
+**Known false positives in this repo:**
+- `jest-e2e.config.js` — referenced by test scripts, not importable
+- `@nestjs/schematics` — used by `nest-cli.json` for `nest generate`
+- `demo.html` — HTML file with script tags, not a JS import
+- Rollup plugins — in `widgets/chat-widget/package.json`, cross-workspace blind spot
+- `axios` — transitive via `@nestjs/axios`, used only for test types
