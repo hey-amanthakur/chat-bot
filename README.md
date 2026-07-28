@@ -1,17 +1,20 @@
-# @chat-bot/chat-widget
+# amanthakur-chat-bot
 
-Embeddable AI chat widget for local businesses. Install, configure, done.
+Embeddable AI chatbot for local businesses. Install, configure, done.
+
+[![npm](https://img.shields.io/npm/v/amanthakur-chat-bot)](https://www.npmjs.com/package/amanthakur-chat-bot)
+[![license](https://img.shields.io/npm/l/amanthakur-chat-bot)](https://github.com/hey-amanthakur/chat-bot/blob/master/LICENSE)
 
 ## Install
 
 ```bash
-npm install @chat-bot/chat-widget
+npm install amanthakur-chat-bot
 ```
 
-## Usage
+## Quick Start
 
 ```js
-import { ChatBot } from '@chat-bot/chat-widget';
+import { ChatBot } from 'amanthakur-chat-bot';
 
 ChatBot.start({
   port: 3000,
@@ -19,29 +22,15 @@ ChatBot.start({
   clients: {
     'my-business': {
       name: 'My Business',
-      tone: 'friendly',
       greeting: 'Hi! How can I help you today?',
-      business_info: {
-        address: '123 Main St, Anytown',
-        phone: '(555) 123-4567',
-        email: 'hello@mybusiness.com',
-      },
       services: [
         { name: 'Consultation', price: '$50', description: 'Initial consultation' },
-        { name: 'Follow-up', price: '$30', description: 'Follow-up visit' },
       ],
       hours: [
         { day: 'Monday', open: '9:00 AM', close: '5:00 PM' },
-        { day: 'Tuesday', open: '9:00 AM', close: '5:00 PM' },
-        { day: 'Wednesday', open: '9:00 AM', close: '5:00 PM' },
       ],
       faqs: [
-        { question: 'Do you accept insurance?', answer: 'Yes, we accept most major insurance plans.' },
-        { question: 'Do you offer emergency appointments?', answer: 'Yes, call us for same-day availability.' },
-      ],
-      policies: [
-        'Please arrive 10 minutes before your appointment',
-        '24-hour cancellation notice required',
+        { question: 'Do you accept insurance?', answer: 'Yes, we accept most major plans.' },
       ],
     },
   },
@@ -103,47 +92,10 @@ The chat bubble appears on your page. That's it.
 | `data-position` | No | `bottom-right` | `top-left`, `top-right`, `bottom-left`, or `bottom-right` |
 | `data-greeting` | No | - | Override the greeting message |
 
-## Multiple Clients
-
-Add as many clients as you need:
-
-```js
-ChatBot.start({
-  port: 3000,
-  openrouterKey: 'sk-or-v1-xxxxx',
-  clients: {
-    'dr-smith-dental': {
-      name: 'Dr. Smith Dental',
-      services: [
-        { name: 'Teeth Cleaning', price: '$120', description: 'Professional cleaning' },
-      ],
-      // ...
-    },
-    'style-studio-salon': {
-      name: 'Style Studio Salon',
-      services: [
-        { name: 'Haircut', price: '$45', description: 'Professional haircut' },
-      ],
-      // ...
-    },
-  },
-});
-```
-
-Each client gets their own knowledge base and chat context. Use the client ID in the widget:
-
-```html
-<!-- Dr. Smith Dental's website -->
-<script src="http://localhost:3000/widgets/chat-widget.min.js" data-client-id="dr-smith-dental"></script>
-
-<!-- Style Studio's website -->
-<script src="http://localhost:3000/widgets/chat-widget.min.js" data-client-id="style-studio-salon"></script>
-```
-
 ## ES Module Usage
 
 ```js
-import ChatWidget from '@chat-bot/chat-widget/widget.esm';
+import ChatWidget from 'amanthakur-chat-bot/widget.esm';
 
 new ChatWidget({
   clientId: 'my-business',
@@ -151,7 +103,7 @@ new ChatWidget({
   primaryColor: '#e11d48',
   icon: '💬',
   headerTitle: 'Support Chat',
-  position: 'bottom-left',
+  position: 'top-right',
   greeting: 'Welcome! How can we help?',
 });
 ```
@@ -164,7 +116,6 @@ icon: '🦷'
 
 // Image URL
 icon: '/images/support-icon.png'
-icon: 'https://example.com/chat-icon.svg'
 
 // Raw SVG
 icon: '<svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="white"/></svg>'
@@ -172,9 +123,54 @@ icon: '<svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r
 // Default (no icon set) → chat bubble SVG
 ```
 
-## API Endpoints
+## Multiple Clients
 
-The server exposes these endpoints:
+```js
+ChatBot.start({
+  port: 3000,
+  openrouterKey: 'sk-or-v1-xxxxx',
+  clients: {
+    'dr-smith-dental': {
+      name: 'Dr. Smith Dental',
+      model: 'openai/gpt-4o',
+      services: [
+        { name: 'Teeth Cleaning', price: '$120', description: 'Professional cleaning' },
+      ],
+    },
+    'style-studio-salon': {
+      name: 'Style Studio Salon',
+      services: [
+        { name: 'Haircut', price: '$45', description: 'Professional haircut' },
+      ],
+    },
+  },
+});
+```
+
+Each client gets their own knowledge base and chat context:
+
+```html
+<!-- Dr. Smith Dental's website -->
+<script src="http://localhost:3000/widgets/chat-widget.min.js" data-client-id="dr-smith-dental"></script>
+
+<!-- Style Studio's website -->
+<script src="http://localhost:3000/widgets/chat-widget.min.js" data-client-id="style-studio-salon"></script>
+```
+
+## How It Works
+
+```
+Page loads → Widget creates chat bubble
+User types → POST /api/chat with clientId + message
+Server loads client config (in-memory)
+Lead detection checks message intent
+  → If lead detected → returns contact prompt
+  → Otherwise → sends to OpenRouter with client's knowledge base
+AI responds using only the client's data
+Response rendered in widget with formatting
+```
+
+## API Endpoints
 
 | Method | Endpoint | Rate Limit | Description |
 |--------|----------|------------|-------------|
@@ -183,33 +179,18 @@ The server exposes these endpoints:
 | POST | `/api/leads` | 10/min | Submit a lead |
 | GET | `/api/leads/:clientId` | - | Get leads for a client |
 
-## How It Works
-
-```
-Your page loads
-  → Widget script creates chat bubble
-  → User types a message
-  → Widget sends POST /api/chat with clientId + message
-  → Server loads client config (in-memory)
-  → Lead detection checks message intent
-  → If lead detected → returns contact prompt
-  → Otherwise → sends to OpenRouter with client's knowledge base
-  → AI responds using only the client's data (services, hours, FAQs, policies)
-  → Response rendered in widget with formatting
-```
-
 ## Security
 
 - **API key stays server-side** — never reaches the browser
 - **Rate limiting** on all endpoints
-- **Input validation** — max 2000 chars for messages, 10KB body limit
+- **Input validation** — max 2000 chars, 10KB body limit
 - **CORS** configurable per deployment
 - **No database required** — client data lives in memory
 
 ## Development
 
 ```bash
-git clone https://github.com/chat-bot/chat-bot.git
+git clone https://github.com/hey-amanthakur/chat-bot.git
 cd chat-bot
 npm install
 npm run dev
@@ -220,20 +201,16 @@ npm run dev
 ```bash
 npm run dev          # Start the server
 npm run build        # Build all packages
-npm run lint         # Lint all packages
-npm test             # Run unit tests
+npm run lint         # Lint
+npm test             # Run tests
 ```
 
-### Running Tests
+### Tests
 
 ```bash
 cd apps/api-gateway
-
-# Unit tests
-npm test
-
-# E2E tests
-npx jest --config jest-e2e.config.js
+npm test                           # Unit tests (73 tests)
+npx jest --config jest-e2e.config.js  # E2E tests (15 tests)
 ```
 
 ## Tech Stack
@@ -245,3 +222,7 @@ npx jest --config jest-e2e.config.js
 - **Rate Limiting:** @nestjs/throttler
 - **Validation:** class-validator
 - **Build:** Turborepo
+
+## License
+
+MIT
