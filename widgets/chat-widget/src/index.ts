@@ -1,7 +1,7 @@
 interface ChatWidgetConfig {
   clientId: string;
   apiUrl: string;
-  position?: 'bottom-right' | 'bottom-left';
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   theme?: 'light' | 'dark';
   primaryColor?: string;
   greeting?: string;
@@ -52,15 +52,20 @@ class ChatWidget {
   }
 
   private createStyles() {
-    const pos = this.config.position === 'bottom-left' ? 'left: 20px' : 'right: 20px';
+    const pos = this.config.position || 'bottom-right';
+    const isLeft = pos.includes('left');
+    const isTop = pos.includes('top');
+    const horizontal = isLeft ? 'left: 20px' : 'right: 20px';
+    const bubbleVertical = isTop ? 'top: 20px' : 'bottom: 20px';
+    const containerVertical = isTop ? 'top: 90px' : 'bottom: 90px';
     const color = this.config.primaryColor;
 
     const style = document.createElement('style');
     style.textContent = `
       .cw-bubble {
         position: fixed;
-        ${pos};
-        bottom: 20px;
+        ${horizontal};
+        ${bubbleVertical};
         width: 60px;
         height: 60px;
         border-radius: 50%;
@@ -82,8 +87,8 @@ class ChatWidget {
       }
       .cw-container {
         position: fixed;
-        ${pos};
-        bottom: 90px;
+        ${horizontal};
+        ${containerVertical};
         width: 380px;
         max-width: calc(100vw - 40px);
         height: 520px;
@@ -224,7 +229,7 @@ class ChatWidget {
         .cw-container {
           width: calc(100vw - 20px);
           height: calc(100vh - 100px);
-          bottom: 80px;
+          ${isTop ? 'top: 80px' : 'bottom: 80px'};
           border-radius: 12px;
         }
       }

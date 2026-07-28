@@ -100,7 +100,7 @@ The chat bubble appears on your page. That's it.
 | `data-color` | No | `#2563eb` | Primary color for bubble, header, and user messages |
 | `data-icon` | No | Chat bubble SVG | Emoji (`🦷`), image URL (`/logo.png`), or raw SVG string |
 | `data-header` | No | `Chat with us` | Header title text |
-| `data-position` | No | `bottom-right` | `bottom-right` or `bottom-left` |
+| `data-position` | No | `bottom-right` | `top-left`, `top-right`, `bottom-left`, or `bottom-right` |
 | `data-greeting` | No | - | Override the greeting message |
 
 ## Multiple Clients
