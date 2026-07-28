@@ -5,6 +5,8 @@ interface ChatWidgetConfig {
   theme?: 'light' | 'dark';
   primaryColor?: string;
   greeting?: string;
+  headerTitle?: string;
+  icon?: string;
 }
 
 interface Message {
@@ -12,6 +14,8 @@ interface Message {
   content: string;
   timestamp: Date;
 }
+
+const DEFAULT_ICON = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
 
 class ChatWidget {
   private config: ChatWidgetConfig;
@@ -25,6 +29,7 @@ class ChatWidget {
       position: 'bottom-right',
       theme: 'light',
       primaryColor: '#2563eb',
+      headerTitle: 'Chat with us',
       ...config,
     };
     this.init();
@@ -34,6 +39,16 @@ class ChatWidget {
     this.createStyles();
     this.createWidget();
     this.attachEventListeners();
+  }
+
+  private renderIcon(): string {
+    const icon = this.config.icon;
+    if (!icon) return DEFAULT_ICON;
+    if (icon.startsWith('<svg')) return icon;
+    if (icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('data:')) {
+      return `<img src="${icon}" alt="Chat" width="28" height="28" style="object-fit:contain;" />`;
+    }
+    return `<span style="font-size:28px;line-height:1;">${icon}</span>`;
   }
 
   private createStyles() {
@@ -92,6 +107,25 @@ class ChatWidget {
         display: flex;
         align-items: center;
         justify-content: space-between;
+      }
+      .cw-header-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .cw-header-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .cw-header-icon img {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
       }
       .cw-header-close {
         background: none;
@@ -199,16 +233,21 @@ class ChatWidget {
   }
 
   private createWidget() {
+    const headerIcon = this.config.icon
+      ? `<span class="cw-header-icon">${this.renderIcon()}</span>`
+      : '';
+
     this.container = document.createElement('div');
     this.container.innerHTML = `
       <button class="cw-bubble" aria-label="Open chat">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
+        ${this.renderIcon()}
       </button>
       <div class="cw-container">
         <div class="cw-header">
-          <span>Chat with us</span>
+          <span class="cw-header-title">
+            ${headerIcon}
+            ${this.config.headerTitle}
+          </span>
           <button class="cw-header-close" aria-label="Close chat">&times;</button>
         </div>
         <div class="cw-messages"></div>
@@ -220,7 +259,6 @@ class ChatWidget {
     `;
     document.body.appendChild(this.container);
 
-    // Show greeting
     if (this.config.greeting) {
       this.addBotMessage(this.config.greeting);
     }
@@ -362,6 +400,8 @@ class ChatWidget {
       position: (script.getAttribute('data-position') as any) || 'bottom-right',
       primaryColor: script.getAttribute('data-color') || '#2563eb',
       greeting: script.getAttribute('data-greeting') || undefined,
+      headerTitle: script.getAttribute('data-header') || undefined,
+      icon: script.getAttribute('data-icon') || undefined,
     };
     if (config.clientId) {
       new ChatWidget(config);

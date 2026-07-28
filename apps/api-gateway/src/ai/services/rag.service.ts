@@ -17,6 +17,7 @@ const DEFAULT_KB = {
 @Injectable()
 export class RagService {
   private readonly dataDir: string;
+  private memoryClients: Record<string, Record<string, any>> = {};
 
   constructor(private readonly configService: ConfigService) {
     this.dataDir =
@@ -24,7 +25,15 @@ export class RagService {
       path.join(process.cwd(), '..', '..', 'data', 'clients');
   }
 
+  setClients(clients: Record<string, Record<string, any>>) {
+    this.memoryClients = clients;
+  }
+
   async getKnowledgeBase(clientId: string): Promise<Record<string, any>> {
+    if (this.memoryClients[clientId]) {
+      return this.memoryClients[clientId];
+    }
+
     const clientDir = path.join(this.dataDir, clientId);
 
     if (!fs.existsSync(clientDir)) {

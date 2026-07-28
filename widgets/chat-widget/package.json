@@ -1,7 +1,7 @@
 {
   "name": "@chat-bot/chat-widget",
   "version": "1.0.0",
-  "description": "Embeddable AI chat widget for local businesses",
+  "description": "Embeddable AI chat widget for local businesses — install, configure, done",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,32 +16,47 @@
     "customer-support",
     "embeddable"
   ],
-  "type": "module",
-  "main": "dist/chat-widget.min.js",
-  "module": "dist/chat-widget.esm.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/chat-widget.esm.js",
-      "require": "./dist/chat-widget.min.js",
-      "types": "./dist/index.d.ts"
-    }
+      "import": "./dist/server.js",
+      "require": "./dist/server.js",
+      "types": "./dist/server.d.ts"
+    },
+    "./widget": "./dist/chat-widget.min.js",
+    "./widget.esm": "./dist/chat-widget.esm.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build:widget": "rollup -c",
+    "build:server": "cd ../../apps/api-gateway && npx nest build",
+    "build:copy": "cp -r ../../widgets/chat-widget/dist/* ../../apps/api-gateway/dist/",
+    "build": "npm run build:widget && npm run build:server && npm run build:copy",
     "dev": "rollup -c -w",
     "clean": "rm -rf dist node_modules"
   },
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/throttler": "^5.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0"
+  },
   "devDependencies": {
-    "rollup": "^4.0.0",
     "@rollup/plugin-typescript": "^11.0.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-terser": "^0.4.0",
+    "@nestjs/cli": "^10.0.0",
     "tslib": "^2.6.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "rollup": "^4.0.0"
   }
 }
