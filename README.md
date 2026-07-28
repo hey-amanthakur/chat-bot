@@ -5,20 +5,22 @@ White-labeled AI chatbot for local businesses. Answer FAQs, capture leads, and a
 ## Architecture
 
 ```
-┌──────────────┐     ┌──────────────────┐     ┌──────────────────┐
-│   Widget     │────▶│  NestJS Gateway  │────▶│  FastAPI AI Svc  │
-│  (browser)   │     │    :3000         │     │     :8000        │
-└──────────────┘     └──────────────────┘     └──────────────────┘
-                            │                         │
-                     Rate Limiting              OpenRouter API
-                     JWT Auth                   RAG Engine
-                     Input Validation           Lead Detection
+┌──────────────┐     ┌──────────────────────────┐
+│   Widget     │────▶│     NestJS Server         │
+│  (browser)   │     │        :3000              │
+└──────────────┘     └──────────────────────────┘
+                           │
+                     Rate Limiting
+                     JWT Auth
+                     Input Validation
+                     OpenRouter API
+                     RAG Engine
+                     Lead Detection
 ```
 
-| Service | Framework | Port | Purpose |
-|---------|-----------|------|---------|
-| API Gateway | NestJS | 3000 | Auth, rate limiting, validation, CORS |
-| AI Service | FastAPI | 8000 | OpenRouter calls, RAG, prompts, leads |
+| Component | Framework | Port | Purpose |
+|-----------|-----------|------|---------|
+| Server | NestJS | 3000 | Auth, rate limiting, validation, CORS, AI processing |
 | Chat Widget | Vanilla JS | - | Embeddable UI for client websites |
 
 ## Quick Start
@@ -26,16 +28,14 @@ White-labeled AI chatbot for local businesses. Answer FAQs, capture leads, and a
 ```bash
 # First time setup
 npm install
-./setup.sh          # Creates Python venv + installs deps
 
 # Start development
-npm run dev         # Runs both services
+npm run dev
 ```
 
 ## Services
 
-- **API Gateway:** http://localhost:3000
-- **AI Service:** http://localhost:8000
+- **Server:** http://localhost:3000
 - **Health Check:** http://localhost:3000/api/health
 
 ## API Endpoints
@@ -55,19 +55,14 @@ npm run dev         # Runs both services
 ```
 chat-bot/
 ├── apps/
-│   ├── api-gateway/      # NestJS (TypeScript)
-│   │   └── src/
-│   │       ├── auth/     # JWT authentication
-│   │       ├── chat/     # Chat proxy to AI service
-│   │       ├── admin/    # Client management
-│   │       ├── leads/    # Lead capture
-│   │       └── health/   # Health endpoints
-│   │
-│   └── ai-service/       # FastAPI (Python)
-│       └── app/
-│           ├── api/      # Internal endpoints
-│           ├── services/ # OpenRouter, RAG, leads
-│           └── models/   # Pydantic schemas
+│   └── api-gateway/      # NestJS (TypeScript)
+│       └── src/
+│           ├── ai/        # OpenRouter, RAG, Lead detection
+│           ├── auth/      # JWT authentication
+│           ├── chat/      # Chat processing
+│           ├── admin/     # Client management
+│           ├── leads/     # Lead capture
+│           └── health/    # Health endpoints
 │
 ├── widgets/
 │   └── chat-widget/      # Embeddable JS widget
@@ -82,16 +77,20 @@ chat-bot/
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` in each service:
+Copy `.env.example` to `.env` in `apps/api-gateway/`:
 
 ```bash
-# apps/api-gateway/.env
+OPENROUTER_API_KEY=sk-or-xxxxx   # Get from openrouter.ai
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD_HASH=$2b$10$...    # bcrypt hash
 JWT_SECRET=<random-32-byte-hex>
+```
 
-# apps/ai-service/.env
-OPENROUTER_API_KEY=sk-or-xxxxx   # Get from openrouter.ai
+## Docker Self-Host
+
+```bash
+cp .env.example .env              # Fill in your env vars
+docker compose up -d              # Server running on localhost:3000
 ```
 
 ## Client Knowledge Base
@@ -100,18 +99,17 @@ Each client has a folder in `data/clients/{client-id}/`:
 
 ```
 data/clients/dr-smith-dental/
-├── config.json      # Client settings
-├── knowledge.md     # Business info
-└── faqs.json        # Frequently asked questions
+├── config.json      # Client settings + knowledge
+└── knowledge.md     # Business info
 ```
 
 ## Tech Stack
 
-- **Backend:** NestJS + FastAPI
-- **LLM:** OpenRouter (Llama 3.1, Mistral, Qwen)
+- **Backend:** NestJS
+- **LLM:** OpenRouter (inclusionai/ling-3.0-flash:free)
 - **Auth:** JWT + bcrypt
-- **Rate Limiting:** @nestjs/throttler + slowapi
-- **Validation:** class-validator + pydantic
+- **Rate Limiting:** @nestjs/throttler
+- **Validation:** class-validator
 - **Build:** Turborepo
 - **Widget:** Vanilla JS + Rollup
 
@@ -127,7 +125,7 @@ data/clients/dr-smith-dental/
 ## Commands
 
 ```bash
-npm run dev          # Start all services
+npm run dev          # Start the server
 npm run build        # Build all packages
 npm run lint         # Lint all packages
 npm run format       # Format with Prettier

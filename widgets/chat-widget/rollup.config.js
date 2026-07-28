@@ -5,13 +5,21 @@ import terser from '@rollup/plugin-terser';
 
 export default {
   input: 'src/index.ts',
-  output: {
-    file: 'dist/chat-widget.min.js',
-    format: 'iife',
-    name: 'ChatWidget',
-    sourcemap: false,
-    plugins: [terser()],
-  },
+  output: [
+    {
+      file: 'dist/chat-widget.min.js',
+      format: 'iife',
+      name: 'ChatWidget',
+      sourcemap: false,
+      plugins: [terser()],
+    },
+    {
+      file: 'dist/chat-widget.esm.js',
+      format: 'es',
+      sourcemap: false,
+      plugins: [terser()],
+    },
+  ],
   plugins: [
     resolve(),
     commonjs(),

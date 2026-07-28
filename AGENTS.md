@@ -11,21 +11,25 @@ White-labeled AI chatbot service for local businesses (dentists, salons, gyms, e
 
 ## Architecture
 
-Two-service microservices architecture:
+Single NestJS server handling everything:
 
-| Service | Framework | Port | Purpose |
-|---------|-----------|------|---------|
-| API Gateway | NestJS | 3000 | Auth, rate limiting, validation, CORS, routing |
-| AI Service | FastAPI | 8000 | OpenRouter calls, RAG, prompts, lead detection |
-
-NestJS proxies external requests to FastAPI internally. FastAPI is never exposed publicly.
+| Component | Framework | Port | Purpose |
+|-----------|-----------|------|---------|
+| Server | NestJS | 3000 | Auth, rate limiting, validation, CORS, AI processing |
+| Chat Widget | Vanilla JS | - | Embeddable UI for client websites |
 
 ## Project Structure
 
 ```
 apps/
-├── api-gateway/      # NestJS (TypeScript)
-└── ai-service/       # FastAPI (Python)
+└── api-gateway/      # NestJS (TypeScript)
+    └── src/
+        ├── ai/        # OpenRouter, RAG, Lead detection
+        ├── auth/      # JWT authentication
+        ├── chat/      # Chat processing
+        ├── admin/     # Client management
+        ├── leads/     # Lead capture
+        └── health/    # Health endpoints
 data/
 ├── clients/          # Per-client knowledge bases (JSON/Markdown)
 └── leads/            # Captured leads per client
@@ -36,10 +40,10 @@ widgets/
 ## Tech Stack
 
 - **LLM Provider:** OpenRouter (inclusionai/ling-3.0-flash:free by default)
-- **Backend:** NestJS (gateway) + FastAPI (AI)
+- **Backend:** NestJS
 - **Auth:** JWT with bcrypt password hashes
-- **Rate Limiting:** `@nestjs/throttler` (NestJS) + `slowapi` (FastAPI)
-- **Input Validation:** `class-validator` (NestJS) + `pydantic` (FastAPI)
+- **Rate Limiting:** `@nestjs/throttler`
+- **Input Validation:** `class-validator`
 - **Notifications:** Resend (email) or Google Sheets API
 
 ## Commands
@@ -47,18 +51,14 @@ widgets/
 ```bash
 # First time setup
 npm install
-./setup.sh            # Creates Python venv + installs deps
 
 # Development
-npm run dev           # Starts both services via Turborepo
+npm run dev           # Starts the NestJS server
 npm run build         # Build all packages
 npm run lint          # Lint all packages
 
-# NestJS Gateway only
+# Server only
 cd apps/api-gateway && npx nest start --watch
-
-# FastAPI AI Service only
-cd apps/ai-service && .venv/bin/uvicorn app.main:app --reload --port 8000
 
 # Build widget
 cd widgets/chat-widget && npm run build
@@ -66,13 +66,11 @@ cd widgets/chat-widget && npm run build
 
 ## Environment Variables
 
-Never commit `.env` files. Required vars in each service:
+Never commit `.env` files. Required vars:
 
 ```env
-# apps/ai-service/.env
-OPENROUTER_API_KEY=sk-or-xxxxx     # Get from openrouter.ai
-
 # apps/api-gateway/.env
+OPENROUTER_API_KEY=sk-or-xxxxx     # Get from openrouter.ai
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD_HASH=$2b$10$xxxxx    # bcrypt hash
 JWT_SECRET=<random-32-byte-hex>
@@ -81,7 +79,7 @@ JWT_SECRET=<random-32-byte-hex>
 ## Key Gotchas
 
 - **Turborepo CWD:** NestJS runs from `apps/api-gateway/` — use `path.join(process.cwd(), '..', '..')` for project root paths
-- **FastAPI data dir:** RAG service path is `Path(__file__).parent.parent.parent.parent.parent / "data" / "clients"` (5 parents from `app/services/rag.py`)
+- **RAG data dir:** CWD is `apps/api-gateway/` — data path resolves to `../../data/clients`. Override with `DATA_DIR` env var (set in Dockerfile for production)
 - **OpenRouter free models:** The `:free` suffix models change availability. Use `inclusionai/ling-3.0-flash:free` as default. Always verify with `GET /api/v1/models` if a model returns 404
 - **@nestjs/throttler v5:** Decorator syntax is `@Throttle({ name: { limit, ttl } })` not `@Throttle('name', { limit, ttl })`
 - **Widget auto-init:** The widget reads `data-*` attributes from its own `<script>` tag to configure itself
@@ -96,8 +94,7 @@ JWT_SECRET=<random-32-byte-hex>
 
 ## Conventions
 
-- **NestJS modules:** One module per domain (auth, chat, admin, leads, health)
-- **FastAPI routers:** Internal endpoints at `/internal/*` prefix
-- **Client data:** Stored in `data/clients/{client-slug}/config.json` + `knowledge.md`
-- **DTOs:** Always use class-validator (NestJS) or pydantic (FastAPI)
+- **NestJS modules:** One module per domain (auth, chat, admin, leads, health, ai)
+- **Client data:** Stored in `data/clients/{client-slug}/config.json`
+- **DTOs:** Always use class-validator
 - **Client IDs:** Use slugs like `dr-smith-dental`, not UUIDs

@@ -1,9 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import * as fs from 'fs';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const isDev = process.env.NODE_ENV !== 'production';
   const allowedOrigins = isDev
@@ -26,6 +29,18 @@ async function bootstrap() {
       },
     }),
   );
+
+  // Serve static files: widget dist, demo page
+  const cwd = process.cwd();
+  const dockerWidgetDist = join(cwd, 'widgets-dist');
+  const devWidgetDist = join(cwd, '..', '..', 'widgets', 'chat-widget', 'dist');
+  const widgetDist = fs.existsSync(dockerWidgetDist) ? dockerWidgetDist : devWidgetDist;
+
+  const devProjectRoot = join(cwd, '..', '..');
+  const projectRoot = fs.existsSync(dockerWidgetDist) ? cwd : devProjectRoot;
+
+  app.useStaticAssets(widgetDist, { prefix: '/widgets/' });
+  app.useStaticAssets(projectRoot, { prefix: '/' });
 
   app.setGlobalPrefix('api');
 

@@ -176,6 +176,16 @@ class ChatWidget {
       }
       .cw-input-bar button:hover { opacity: 0.9; }
       .cw-input-bar button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .cw-msg-bot ul {
+        margin: 6px 0;
+        padding-left: 20px;
+      }
+      .cw-msg-bot li {
+        margin: 3px 0;
+      }
+      .cw-msg-bot strong {
+        font-weight: 600;
+      }
       @media (max-width: 480px) {
         .cw-container {
           width: calc(100vw - 20px);
@@ -270,7 +280,7 @@ class ChatWidget {
 
       const data = await response.json();
       loadingEl.classList.remove('cw-loading');
-      loadingEl.textContent = data.response;
+      loadingEl.innerHTML = this.parseMarkdown(data.response);
 
       if (data.lead_captured) {
         this.addBotMessage('Please share your details and we will reach out to you soon!');
@@ -294,12 +304,39 @@ class ChatWidget {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
+  private parseMarkdown(text: string): string {
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    const lines = html.split('\n');
+    let result = '';
+    let inList = false;
+
+    for (const line of lines) {
+      const listMatch = line.match(/^[\-\*]\s+(.*)/);
+      if (listMatch) {
+        if (!inList) { result += '<ul>'; inList = true; }
+        result += `<li>${listMatch[1]}</li>`;
+      } else {
+        if (inList) { result += '</ul>'; inList = false; }
+        result += line + '<br>';
+      }
+    }
+    if (inList) result += '</ul>';
+    return result.replace(/<br>$/, '');
+  }
+
   private addBotMessage(content: string): HTMLDivElement {
     this.messages.push({ role: 'assistant', content, timestamp: new Date() });
     const messagesEl = this.container!.querySelector('.cw-messages')!;
     const div = document.createElement('div');
     div.className = 'cw-msg cw-msg-bot';
-    div.textContent = content;
+    div.innerHTML = this.parseMarkdown(content);
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
     return div;

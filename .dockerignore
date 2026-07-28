@@ -1,0 +1,12 @@
+node_modules
+dist
+.turbo
+.git
+*.md
+.env
+.env.*
+!.env.example
+data/leads
+coverage
+.venv
+__pycache__
