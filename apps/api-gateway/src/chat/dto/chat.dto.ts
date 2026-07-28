@@ -1,7 +1,8 @@
-import { IsString, IsUUID, MaxLength, IsOptional } from 'class-validator';
+import { IsString, MaxLength, IsOptional } from 'class-validator';
 
 export class ChatDto {
-  @IsUUID()
+  @IsString()
+  @MaxLength(100)
   clientId: string;
 
   @IsString()

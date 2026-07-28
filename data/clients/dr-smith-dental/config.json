@@ -1,0 +1,99 @@
+{
+  "name": "Dr. Smith Dental",
+  "slug": "dr-smith-dental",
+  "tone": "friendly",
+  "greeting": "Hi there! Welcome to Dr. Smith Dental. How can I help you today?",
+  "lead_capture_enabled": true,
+  "lead_notification_method": "email",
+  "lead_email": "leads@drsmithdental.com",
+  "max_tokens": 500,
+  "model": "inclusionai/ling-3.0-flash:free",
+  "business_info": {
+    "name": "Dr. Smith Dental",
+    "address": "123 Main Street, Anytown, CA 90210",
+    "phone": "(555) 123-4567",
+    "email": "info@drsmithdental.com"
+  },
+  "services": [
+    {
+      "name": "General Checkup",
+      "price": "$75",
+      "duration": "30 minutes",
+      "description": "Comprehensive dental examination including X-rays"
+    },
+    {
+      "name": "Teeth Cleaning",
+      "price": "$120",
+      "duration": "45 minutes",
+      "description": "Professional teeth cleaning and polishing"
+    },
+    {
+      "name": "Teeth Whitening",
+      "price": "$350",
+      "duration": "60 minutes",
+      "description": "Professional whitening treatment for a brighter smile"
+    },
+    {
+      "name": "Dental Crown",
+      "price": "$800-$1200",
+      "duration": "2 visits",
+      "description": "Custom porcelain crown to restore damaged teeth"
+    },
+    {
+      "name": "Root Canal",
+      "price": "$700-$1000",
+      "duration": "1-2 visits",
+      "description": "Root canal treatment to save infected teeth"
+    },
+    {
+      "name": "Emergency Care",
+      "price": "Varies",
+      "duration": "Same day",
+      "description": "Same-day emergency dental care"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "What are your office hours?",
+      "answer": "We're open Monday through Friday, 9:00 AM to 5:00 PM. We also offer Saturday appointments from 9:00 AM to 2:00 PM."
+    },
+    {
+      "question": "Do you accept insurance?",
+      "answer": "Yes! We accept most major dental insurance plans including Delta Dental, Cigna, Aetna, and MetLife. We also offer payment plans for uninsured patients."
+    },
+    {
+      "question": "How do I schedule an appointment?",
+      "answer": "You can call us at (555) 123-4567 or book online through our website. We typically have availability within 1-2 weeks."
+    },
+    {
+      "question": "Do you offer emergency appointments?",
+      "answer": "Yes, we offer same-day emergency care for severe toothaches, broken teeth, or dental trauma. Call us immediately at (555) 123-4567."
+    },
+    {
+      "question": "What should I bring to my first visit?",
+      "answer": "Please bring your photo ID, insurance card, and any recent dental X-rays. Arrive 15 minutes early to complete paperwork."
+    },
+    {
+      "question": "Is the parking available?",
+      "answer": "Yes! We have free parking in our lot behind the building. There's also street parking available on Main Street."
+    },
+    {
+      "question": "Do you see children?",
+      "answer": "Absolutely! We welcome patients of all ages, including children. We make kid visits fun and comfortable."
+    }
+  ],
+  "policies": [
+    "Cancellation Policy: Please give 24-hour notice for cancellations. Late cancellations may incur a $50 fee.",
+    "Payment: Full payment is due at time of service unless prior arrangements are made.",
+    "Insurance: We file insurance claims as a courtesy to our patients."
+  ],
+  "hours": [
+    {"day": "Monday", "open": "9:00 AM", "close": "5:00 PM"},
+    {"day": "Tuesday", "open": "9:00 AM", "close": "5:00 PM"},
+    {"day": "Wednesday", "open": "9:00 AM", "close": "5:00 PM"},
+    {"day": "Thursday", "open": "9:00 AM", "close": "5:00 PM"},
+    {"day": "Friday", "open": "9:00 AM", "close": "5:00 PM"},
+    {"day": "Saturday", "open": "9:00 AM", "close": "2:00 PM"},
+    {"day": "Sunday", "open": "Closed", "close": "Closed"}
+  ]
+}

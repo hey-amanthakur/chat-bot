@@ -1,7 +1,8 @@
-import { IsString, IsUUID, IsEmail, IsOptional, MaxLength, Matches } from 'class-validator';
+import { IsString, IsEmail, IsOptional, MaxLength } from 'class-validator';
 
 export class LeadDto {
-  @IsUUID()
+  @IsString()
+  @MaxLength(100)
   clientId: string;
 
   @IsString()
@@ -14,13 +15,14 @@ export class LeadDto {
 
   @IsString()
   @IsOptional()
-  @Matches(/^\+?[1-9]\d{1,14}$/)
+  @MaxLength(20)
   phone?: string;
 
   @IsString()
   @MaxLength(500)
   reason: string;
 
-  @IsUUID()
+  @IsString()
+  @MaxLength(100)
   conversationId: string;
 }

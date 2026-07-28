@@ -27,14 +27,15 @@ apps/
 ├── api-gateway/      # NestJS (TypeScript)
 └── ai-service/       # FastAPI (Python)
 data/
-└── clients/          # Per-client knowledge bases (JSON/Markdown)
+├── clients/          # Per-client knowledge bases (JSON/Markdown)
+└── leads/            # Captured leads per client
 widgets/
-└── chat-widget/      # Embeddable JS widget
+└── chat-widget/      # Embeddable JS widget (built to dist/)
 ```
 
 ## Tech Stack
 
-- **LLM Provider:** OpenRouter (Llama 3.1, Mistral, Qwen)
+- **LLM Provider:** OpenRouter (inclusionai/ling-3.0-flash:free by default)
 - **Backend:** NestJS (gateway) + FastAPI (AI)
 - **Auth:** JWT with bcrypt password hashes
 - **Rate Limiting:** `@nestjs/throttler` (NestJS) + `slowapi` (FastAPI)
@@ -44,57 +45,59 @@ widgets/
 ## Commands
 
 ```bash
-# NestJS Gateway
-cd apps/api-gateway
+# First time setup
 npm install
-npm run start:dev    # Dev server on :3000
-npm run build        # Production build
-npm run test         # Jest tests
+./setup.sh            # Creates Python venv + installs deps
 
-# FastAPI AI Service
-cd apps/ai-service
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-pytest               # Tests
+# Development
+npm run dev           # Starts both services via Turborepo
+npm run build         # Build all packages
+npm run lint          # Lint all packages
+
+# NestJS Gateway only
+cd apps/api-gateway && npx nest start --watch
+
+# FastAPI AI Service only
+cd apps/ai-service && .venv/bin/uvicorn app.main:app --reload --port 8000
+
+# Build widget
+cd widgets/chat-widget && npm run build
 ```
 
 ## Environment Variables
 
-Never commit `.env` files. Required vars:
+Never commit `.env` files. Required vars in each service:
 
 ```env
-# OpenRouter (server-side only, never exposed to frontend)
-OPENROUTER_API_KEY=sk-or-xxxxx
+# apps/ai-service/.env
+OPENROUTER_API_KEY=sk-or-xxxxx     # Get from openrouter.ai
 
-# Admin Auth
+# apps/api-gateway/.env
 ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD_HASH=$2b$10$xxxxx  # bcrypt hash
+ADMIN_PASSWORD_HASH=$2b$10$xxxxx    # bcrypt hash
 JWT_SECRET=<random-32-byte-hex>
-
-# Services
-RESEND_API_KEY=re_xxxxx          # Optional
-ALLOWED_ORIGINS=https://...
 ```
+
+## Key Gotchas
+
+- **Turborepo CWD:** NestJS runs from `apps/api-gateway/` — use `path.join(process.cwd(), '..', '..')` for project root paths
+- **FastAPI data dir:** RAG service path is `Path(__file__).parent.parent.parent.parent.parent / "data" / "clients"` (5 parents from `app/services/rag.py`)
+- **OpenRouter free models:** The `:free` suffix models change availability. Use `inclusionai/ling-3.0-flash:free` as default. Always verify with `GET /api/v1/models` if a model returns 404
+- **@nestjs/throttler v5:** Decorator syntax is `@Throttle({ name: { limit, ttl } })` not `@Throttle('name', { limit, ttl })`
+- **Widget auto-init:** The widget reads `data-*` attributes from its own `<script>` tag to configure itself
 
 ## Security Requirements
 
 1. **Rate limiting:** Auth routes: 5 attempts/15min. Chat: 20/min. Leads: 10/min.
 2. **No hardcoded secrets:** All API keys in env vars only.
 3. **Input sanitization:** Validate all inputs. Max 2000 chars for messages, 10KB body limit.
-4. **CORS:** Restrict to allowed origins per client.
+4. **CORS:** Open in dev, restricted per client in production.
 5. **API key isolation:** OpenRouter key never reaches frontend or client widget.
-
-## Key Constraints (from PRD)
-
-- Response time <3 seconds per message
-- Cost <$0.02 per conversation
-- Widget must embed via single `<script>` tag on any website
-- Must work on desktop and mobile
-- Per-client knowledge base isolation (no cross-contamination)
 
 ## Conventions
 
-- **NestJS modules:** One module per domain (auth, chat, admin, leads)
+- **NestJS modules:** One module per domain (auth, chat, admin, leads, health)
 - **FastAPI routers:** Internal endpoints at `/internal/*` prefix
-- **Client data:** Stored in `data/clients/{client-id}/` as JSON + Markdown
-- **DTOs:** Always use class-validator (NestJS) or pydantic (FastAPI) for request/response validation
+- **Client data:** Stored in `data/clients/{client-slug}/config.json` + `knowledge.md`
+- **DTOs:** Always use class-validator (NestJS) or pydantic (FastAPI)
+- **Client IDs:** Use slugs like `dr-smith-dental`, not UUIDs
