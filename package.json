@@ -35,25 +35,19 @@
     "build:copy": "rm -rf dist && mkdir -p dist/widgets && cp -r apps/api-gateway/dist/* dist/ && cp widgets/chat-widget/dist/* dist/widgets/",
     "build": "npm run build:server && npm run build:widget && npm run build:copy",
     "dev": "cd apps/api-gateway && npm run dev",
-    "lint": "eslint",
     "test": "cd apps/api-gateway && npm test",
     "clean": "rm -rf dist node_modules apps/api-gateway/dist apps/api-gateway/dist-test widgets/chat-widget/dist"
   },
   "dependencies": {},
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^11.0.0",
     "@types/node": "^20.0.0",
-    "eslint": "^10.8.0",
-    "eslint-plugin-prettier": "^5.5.6",
-    "prettier": "^3.9.6",
     "rollup": "^4.0.0",
     "tslib": "^2.6.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.65.0"
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=20"

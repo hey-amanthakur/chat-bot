@@ -1,9 +1,0 @@
-**/*.spec.js
-**/*.spec.d.ts
-**/*.spec.js.map
-**/*.js.map
-**/tsconfig.tsbuildinfo
-src/
-widgets/chat-widget/src/
-widgets/chat-widget/rollup.config.js
-apps/
