@@ -6,10 +6,11 @@ export interface OpenRouterDeps {
   fetchFn?: typeof fetch;
 }
 
-const DEFAULT_MODEL = 'inclusionai/ling-3.0-flash:free';
+const DEFAULT_MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
 const FALLBACK_MODELS = [
-  'meta-llama/llama-3.1-8b-instruct:free',
   'google/gemma-2-9b-it:free',
+  'mistralai/mistral-7b-instruct:free',
+  'microsoft/phi-3-mini-128k-instruct:free',
 ];
 const DEFAULT_MAX_TOKENS = 500;
 const REQUEST_TIMEOUT_MS = 30000;
@@ -72,13 +73,13 @@ ${hoursText}
 FAQS:
 ${faqsText}
 
-    POLICIES:
-    ${policiesText}
+POLICIES:
+${policiesText}
 
-    ADDITIONAL KNOWLEDGE BASE:
-    ${kb.knowledge_text || 'No additional knowledge base information available.'}
+ADDITIONAL KNOWLEDGE BASE:
+${kb.knowledge_text || 'No additional knowledge base information available.'}
 
-    When the customer asks a question, provide a helpful answer based on this information. If you cannot answer, offer to connect them with the team.`;
+When the customer asks a question, provide a helpful answer based on this information. If you cannot answer, offer to connect them with the team.`;
   }
 
   async chatCompletion(
@@ -114,7 +115,10 @@ ${faqsText}
         if (!response.ok) {
           const detail = await response.text().catch(() => '');
           console.error(`OpenRouter HTTP error (${model}): ${response.status} - ${detail}`);
-          if (response.status === 429 && models.indexOf(model) < models.length - 1) {
+          
+          // Retry on 429 (Rate Limit), 404 (Not Found), 500+ (Server Errors)
+          const retryable = response.status === 429 || response.status === 404 || response.status >= 500;
+          if (retryable && models.indexOf(model) < models.length - 1) {
             continue;
           }
           return "I'm experiencing a temporary issue. Please try again in a moment.";
