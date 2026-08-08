@@ -16,6 +16,7 @@ import { HttpError } from './http/errors';
 import { RouteContext, sendError, sendText } from './http/types';
 import { applyCorsHeaders, readJsonBody, RateLimiter, extractBearerToken } from './http/middleware';
 import { serveStatic } from './http/static';
+import { projectRoot, dataClientsDir, dataLeadsDir } from './paths';
 
 export interface ServerOptions {
   port?: number;
@@ -24,6 +25,7 @@ export interface ServerOptions {
   openrouterFetch?: typeof fetch;
   widgetDist?: string;
   projectRoot?: string;
+  dataDir?: string;
   rateLimiter?: RateLimiter;
   verifyPassword?: (password: string, hash: string) => Promise<boolean> | boolean;
   log?: (message: string) => void;
@@ -64,14 +66,13 @@ export function createChatServer(options: ServerOptions = {}): http.Server {
   const limiter = options.rateLimiter ?? new RateLimiter();
   const log = options.log ?? ((message: string) => console.log(message));
 
-  const cwd = process.cwd();
-  const dockerWidgetDist = path.join(cwd, 'widgets-dist');
+  const root = options.projectRoot ?? projectRoot();
+  const dockerWidgetDist = path.join(root, 'widgets-dist');
   const widgetDist =
     options.widgetDist ??
     (fs.existsSync(dockerWidgetDist)
       ? dockerWidgetDist
-      : path.join(cwd, '..', '..', 'widgets', 'chat-widget', 'dist'));
-  const projectRoot = options.projectRoot ?? path.join(cwd, '..', '..');
+      : path.join(root, 'widgets', 'chat-widget', 'dist'));
 
   return http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', 'http://localhost');
@@ -101,7 +102,7 @@ export function createChatServer(options: ServerOptions = {}): http.Server {
           return;
         }
         const handled = await serveStatic(req, res, ctx.pathname, [
-          { prefix: '/', rootDir: projectRoot },
+          { prefix: '/', rootDir: root },
         ]);
         if (handled) return;
         sendText(res, 404, 'Not Found');
@@ -178,6 +179,7 @@ export async function startChatServer(options: ServerOptions = {}): Promise<Chat
   log(`ChatBot running at ${url}`);
   log(`Widget: ${url}/widgets/chat-widget.min.js`);
   log(`Health: ${url}/api/health`);
+  log(`Data dir: ${options.dataDir ?? env.dataDir ?? dataClientsDir()}`);
 
   return { server, url };
 }

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { FsLike } from '../ai/services/rag.service';
+import { dataLeadsDir } from '../paths';
 
 export interface Lead {
   id: string;
@@ -32,10 +33,7 @@ export class LeadsService {
   private readonly fs: FsLike;
 
   constructor(deps: LeadsDeps = {}) {
-    this.dataDir =
-      deps.dataDir ??
-      process.env.LEADS_DATA_DIR ??
-      path.join(process.cwd(), '..', '..', 'data', 'leads');
+    this.dataDir = deps.dataDir ?? dataLeadsDir();
     this.fs = deps.fs ?? fs;
 
     if (!this.fs.existsSync(this.dataDir)) {

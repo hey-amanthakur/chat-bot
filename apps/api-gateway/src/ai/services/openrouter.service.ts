@@ -7,6 +7,10 @@ export interface OpenRouterDeps {
 }
 
 const DEFAULT_MODEL = 'inclusionai/ling-3.0-flash:free';
+const FALLBACK_MODELS = [
+  'meta-llama/llama-3.1-8b-instruct:free',
+  'google/gemma-2-9b-it:free',
+];
 const DEFAULT_MAX_TOKENS = 500;
 const REQUEST_TIMEOUT_MS = 30000;
 
@@ -68,10 +72,13 @@ ${hoursText}
 FAQS:
 ${faqsText}
 
-POLICIES:
-${policiesText}
+    POLICIES:
+    ${policiesText}
 
-When the customer asks a question, provide a helpful answer based on this information. If you cannot answer, offer to connect them with the team.`;
+    ADDITIONAL KNOWLEDGE BASE:
+    ${kb.knowledge_text || 'No additional knowledge base information available.'}
+
+    When the customer asks a question, provide a helpful answer based on this information. If you cannot answer, offer to connect them with the team.`;
   }
 
   async chatCompletion(
@@ -80,41 +87,52 @@ When the customer asks a question, provide a helpful answer based on this inform
     kb: Record<string, any> = {},
   ): Promise<string> {
     const systemPrompt = this.buildSystemPrompt(kb);
+    const models = kb.model ? [kb.model, ...FALLBACK_MODELS] : [DEFAULT_MODEL, ...FALLBACK_MODELS];
 
-    try {
-      const response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://chat-bot.example.com',
-          'X-Title': 'Business Chatbot',
-        },
-        body: JSON.stringify({
-          model: kb.model || DEFAULT_MODEL,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: message },
-          ],
-          max_tokens: kb.max_tokens || DEFAULT_MAX_TOKENS,
-          temperature: 0.7,
-        }),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+    for (const model of models) {
+      try {
+        const response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://chat-bot.example.com',
+            'X-Title': 'Business Chatbot',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: message },
+            ],
+            max_tokens: kb.max_tokens || DEFAULT_MAX_TOKENS,
+            temperature: 0.7,
+          }),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        });
 
-      if (!response.ok) {
-        const detail = await response.text().catch(() => '');
-        console.error(`OpenRouter HTTP error: ${response.status} - ${detail}`);
-        return "I'm experiencing a temporary issue. Please try again in a moment.";
+        if (!response.ok) {
+          const detail = await response.text().catch(() => '');
+          console.error(`OpenRouter HTTP error (${model}): ${response.status} - ${detail}`);
+          if (response.status === 429 && models.indexOf(model) < models.length - 1) {
+            continue;
+          }
+          return "I'm experiencing a temporary issue. Please try again in a moment.";
+        }
+
+        const data = (await response.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        return data.choices?.[0]?.message?.content ?? '';
+      } catch (error) {
+        console.error(`OpenRouter error (${model}): ${error instanceof Error ? error.message : String(error)}`);
+        if (models.indexOf(model) < models.length - 1) {
+          continue;
+        }
+        return "I'm having trouble connecting right now. Please try again later.";
       }
-
-      const data = (await response.json()) as {
-        choices?: Array<{ message?: { content?: string } }>;
-      };
-      return data.choices?.[0]?.message?.content ?? '';
-    } catch (error) {
-      console.error(`OpenRouter error: ${error instanceof Error ? error.message : String(error)}`);
-      return "I'm having trouble connecting right now. Please try again later.";
     }
+
+    return "I'm having trouble connecting right now. Please try again later.";
   }
 }

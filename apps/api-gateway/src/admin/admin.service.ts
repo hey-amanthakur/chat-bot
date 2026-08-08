@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { FsLike } from '../ai/services/rag.service';
 import { HttpError } from '../http/errors';
+import { dataClientsDir } from '../paths';
 
 export interface CreateClientInput {
   name: string;
@@ -28,10 +29,7 @@ export class AdminService {
   private readonly fs: FsLike;
 
   constructor(deps: AdminDeps = {}) {
-    this.dataDir =
-      deps.dataDir ??
-      process.env.DATA_DIR ??
-      path.join(process.cwd(), '..', '..', 'data', 'clients');
+    this.dataDir = deps.dataDir ?? dataClientsDir();
     this.fs = deps.fs ?? fs;
   }
 
