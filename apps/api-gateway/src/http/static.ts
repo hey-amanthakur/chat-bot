@@ -5,6 +5,7 @@ import { sendText, contentTypeFor, sendJson } from './types';
 export interface StaticRoot {
   prefix: string;
   rootDir: string;
+  fallback?: string;
 }
 
 function isSafeWithin(rootDir: string, filePath: string): boolean {
@@ -22,8 +23,14 @@ export async function serveStatic(
   for (const root of roots) {
     if (!pathname.startsWith(root.prefix)) continue;
 
-    const rel = pathname.slice(root.prefix.length).replace(/^\/+/, '');
-    if (!rel) return false;
+    let rel = pathname.slice(root.prefix.length).replace(/^\/+/, '');
+    if (!rel) {
+      if (root.fallback) {
+        rel = root.fallback;
+      } else {
+        continue;
+      }
+    }
 
     const filePath = path.join(root.rootDir, ...rel.split('/'));
     if (!isSafeWithin(root.rootDir, filePath)) {

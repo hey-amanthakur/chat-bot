@@ -102,7 +102,7 @@ export function createChatServer(options: ServerOptions = {}): http.Server {
           return;
         }
         const handled = await serveStatic(req, res, ctx.pathname, [
-          { prefix: '/', rootDir: root },
+          { prefix: '/', rootDir: root, fallback: 'demo.html' },
         ]);
         if (handled) return;
         sendText(res, 404, 'Not Found');
