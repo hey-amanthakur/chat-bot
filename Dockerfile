@@ -4,18 +4,16 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files first (better layer caching)
-COPY package.json package-lock.json turbo.json ./
+COPY package.json package-lock.json ./
 COPY apps/api-gateway/package.json apps/api-gateway/
 COPY widgets/chat-widget/package.json widgets/chat-widget/
-COPY packages/shared/package.json packages/shared/
 
-# Install all dependencies
+# Install dependencies (dev deps needed for the build only)
 RUN npm ci
 
 # Copy source code
 COPY apps/api-gateway/ apps/api-gateway/
 COPY widgets/chat-widget/ widgets/chat-widget/
-COPY packages/shared/ packages/shared/
 COPY data/ data/
 
 # Build everything
@@ -33,9 +31,8 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S appgroup && \
     adduser -S appuser -u 1001 -G appgroup
 
-# Copy built application
+# Copy built application (zero runtime dependencies — no node_modules needed)
 COPY --from=builder --chown=appuser:appgroup /app/apps/api-gateway/dist ./dist
-COPY --from=builder --chown=appuser:appgroup /app/apps/api-gateway/node_modules ./node_modules
 COPY --from=builder --chown=appuser:appgroup /app/widgets/chat-widget/dist ./widgets-dist
 COPY --from=builder --chown=appuser:appgroup /app/data ./data
 
@@ -43,6 +40,9 @@ COPY --from=builder --chown=appuser:appgroup /app/data ./data
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV DATA_DIR=/app/data/clients
+ENV LEADS_DATA_DIR=/app/data/leads
+
+# ALLOWED_ORIGINS must be set at runtime (comma-separated) for CORS in production
 
 EXPOSE 3000
 
@@ -53,4 +53,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/main"]
+CMD ["node", "dist/main.js"]

@@ -1,12 +1,9 @@
-import { Injectable } from '@nestjs/common';
-
 export interface LeadDetection {
   detectLead: boolean;
   confidence: number;
   extractedInfo: Record<string, any> | null;
 }
 
-@Injectable()
 export class LeadDetectorService {
   private readonly LEAD_KEYWORDS = [
     'contact',
@@ -38,7 +35,6 @@ export class LeadDetectorService {
     const messageLower = message.toLowerCase();
 
     const keywordMatches = this.LEAD_KEYWORDS.filter((kw) => messageLower.includes(kw)).length;
-
     const patternMatches = this.LEAD_PATTERNS.filter((p) => messageLower.includes(p)).length;
 
     const confidence = Math.min(keywordMatches * 0.15 + patternMatches * 0.3, 1.0);

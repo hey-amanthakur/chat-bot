@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { FsLike } from '../ai/services/rag.service';
 
 export interface Lead {
   id: string;
@@ -13,25 +13,37 @@ export interface Lead {
   createdAt: string;
 }
 
-@Injectable()
-export class LeadsService {
-  private readonly logger = new Logger(LeadsService.name);
-  private readonly dataDir = path.join(process.cwd(), '..', '..', 'data', 'leads');
+export interface LeadInput {
+  clientId: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  reason: string;
+  conversationId: string;
+}
 
-  constructor() {
-    if (!fs.existsSync(this.dataDir)) {
-      fs.mkdirSync(this.dataDir, { recursive: true });
+export interface LeadsDeps {
+  dataDir?: string;
+  fs?: FsLike;
+}
+
+export class LeadsService {
+  private readonly dataDir: string;
+  private readonly fs: FsLike;
+
+  constructor(deps: LeadsDeps = {}) {
+    this.dataDir =
+      deps.dataDir ??
+      process.env.LEADS_DATA_DIR ??
+      path.join(process.cwd(), '..', '..', 'data', 'leads');
+    this.fs = deps.fs ?? fs;
+
+    if (!this.fs.existsSync(this.dataDir)) {
+      this.fs.mkdirSync(this.dataDir, { recursive: true });
     }
   }
 
-  async createLead(data: {
-    clientId: string;
-    name: string;
-    email?: string;
-    phone?: string;
-    reason: string;
-    conversationId: string;
-  }): Promise<Lead> {
+  async createLead(data: LeadInput): Promise<Lead> {
     const lead: Lead = {
       id: `lead-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
       ...data,
@@ -40,22 +52,22 @@ export class LeadsService {
 
     const clientLeadsFile = path.join(this.dataDir, `${data.clientId}.json`);
     let leads: Lead[] = [];
-    if (fs.existsSync(clientLeadsFile)) {
-      leads = JSON.parse(fs.readFileSync(clientLeadsFile, 'utf-8')) as Lead[];
+    if (this.fs.existsSync(clientLeadsFile)) {
+      leads = JSON.parse(this.fs.readFileSync(clientLeadsFile, 'utf-8')) as Lead[];
     }
     leads.push(lead);
-    fs.writeFileSync(clientLeadsFile, JSON.stringify(leads, null, 2));
+    this.fs.writeFileSync(clientLeadsFile, JSON.stringify(leads, null, 2));
 
-    this.logger.log(`Lead captured: ${lead.id} for client ${data.clientId}`);
+    console.log(`Lead captured: ${lead.id} for client ${data.clientId}`);
 
     return lead;
   }
 
   async getLeads(clientId: string): Promise<Lead[]> {
     const clientLeadsFile = path.join(this.dataDir, `${clientId}.json`);
-    if (!fs.existsSync(clientLeadsFile)) {
+    if (!this.fs.existsSync(clientLeadsFile)) {
       return [];
     }
-    return JSON.parse(fs.readFileSync(clientLeadsFile, 'utf-8')) as Lead[];
+    return JSON.parse(this.fs.readFileSync(clientLeadsFile, 'utf-8')) as Lead[];
   }
 }

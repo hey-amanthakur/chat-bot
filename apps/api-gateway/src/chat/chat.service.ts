@@ -1,19 +1,31 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { OpenRouterService } from '../ai/services/openrouter.service';
 import { RagService } from '../ai/services/rag.service';
 import { LeadDetectorService } from '../ai/services/lead-detector.service';
 
-@Injectable()
+export interface ChatServiceDeps {
+  openrouter: OpenRouterService;
+  rag: RagService;
+  leadDetector: LeadDetectorService;
+}
+
+export interface ChatResult {
+  response: string;
+  lead_captured: boolean;
+  session_id: string;
+}
+
 export class ChatService {
-  private readonly logger = new Logger(ChatService.name);
+  private readonly openrouter: OpenRouterService;
+  private readonly rag: RagService;
+  private readonly leadDetector: LeadDetectorService;
 
-  constructor(
-    private readonly openrouter: OpenRouterService,
-    private readonly rag: RagService,
-    private readonly leadDetector: LeadDetectorService,
-  ) {}
+  constructor(deps: ChatServiceDeps) {
+    this.openrouter = deps.openrouter;
+    this.rag = deps.rag;
+    this.leadDetector = deps.leadDetector;
+  }
 
-  async processMessage(clientId: string, message: string, sessionId: string) {
+  async processMessage(clientId: string, message: string, sessionId: string): Promise<ChatResult> {
     try {
       const kb = await this.rag.getKnowledgeBase(clientId);
 
@@ -36,7 +48,9 @@ export class ChatService {
         session_id: sessionId,
       };
     } catch (error) {
-      this.logger.error(`Chat processing error: ${error?.message || error}`);
+      console.error(
+        `Chat processing error: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return {
         response: "I'm having trouble right now. Please try again.",
         lead_captured: false,

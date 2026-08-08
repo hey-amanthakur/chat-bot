@@ -1,26 +1,28 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { getEnv } from '../../config';
 
-@Injectable()
+export interface OpenRouterDeps {
+  baseUrl?: string;
+  apiKey?: string;
+  fetchFn?: typeof fetch;
+}
+
+const DEFAULT_MODEL = 'inclusionai/ling-3.0-flash:free';
+const DEFAULT_MAX_TOKENS = 500;
+const REQUEST_TIMEOUT_MS = 30000;
+
 export class OpenRouterService {
-  private readonly logger = new Logger(OpenRouterService.name);
   private readonly baseUrl: string;
   private readonly apiKey: string;
+  private readonly fetchFn: typeof fetch;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
-  ) {
-    this.baseUrl = this.configService.get<string>(
-      'OPENROUTER_BASE_URL',
-      'https://openrouter.ai/api/v1',
-    );
-    this.apiKey = this.configService.get<string>('OPENROUTER_API_KEY', '');
+  constructor(deps: OpenRouterDeps = {}) {
+    const env = getEnv();
+    this.baseUrl = deps.baseUrl ?? env.openrouterBaseUrl;
+    this.apiKey = deps.apiKey ?? env.openrouterApiKey;
+    this.fetchFn = deps.fetchFn ?? globalThis.fetch;
   }
 
-  buildSystemPrompt(kb: Record<string, any>): string {
+  buildSystemPrompt(kb: Record<string, any> = {}): string {
     const businessName = kb.name || 'this business';
     const tone = kb.tone || 'friendly';
     const greeting = kb.greeting || `Hi! Welcome to ${businessName}. How can I help you today?`;
@@ -74,45 +76,44 @@ When the customer asks a question, provide a helpful answer based on this inform
 
   async chatCompletion(
     message: string,
-    clientId: string,
+    _clientId: string,
     kb: Record<string, any> = {},
   ): Promise<string> {
     const systemPrompt = this.buildSystemPrompt(kb);
 
     try {
-      const response = await firstValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/chat/completions`,
-          {
-            model: kb.model || 'inclusionai/ling-3.0-flash:free',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: message },
-            ],
-            max_tokens: kb.max_tokens || 500,
-            temperature: 0.7,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${this.apiKey}`,
-              'Content-Type': 'application/json',
-              'HTTP-Referer': 'https://chat-bot.example.com',
-              'X-Title': 'Business Chatbot',
-            },
-            timeout: 30000,
-          },
-        ),
-      );
+      const response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://chat-bot.example.com',
+          'X-Title': 'Business Chatbot',
+        },
+        body: JSON.stringify({
+          model: kb.model || DEFAULT_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message },
+          ],
+          max_tokens: kb.max_tokens || DEFAULT_MAX_TOKENS,
+          temperature: 0.7,
+        }),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
 
-      return response.data.choices[0].message.content;
-    } catch (error) {
-      if (error?.response) {
-        this.logger.error(
-          `OpenRouter HTTP error: ${error.response.status} - ${JSON.stringify(error.response.data)}`,
-        );
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '');
+        console.error(`OpenRouter HTTP error: ${response.status} - ${detail}`);
         return "I'm experiencing a temporary issue. Please try again in a moment.";
       }
-      this.logger.error(`OpenRouter error: ${error?.message || error}`);
+
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+      return data.choices?.[0]?.message?.content ?? '';
+    } catch (error) {
+      console.error(`OpenRouter error: ${error instanceof Error ? error.message : String(error)}`);
       return "I'm having trouble connecting right now. Please try again later.";
     }
   }

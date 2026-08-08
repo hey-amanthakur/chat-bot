@@ -361,7 +361,7 @@ class ChatWidget {
     let inList = false;
 
     for (const line of lines) {
-      const listMatch = line.match(/^[\-\*]\s+(.*)/);
+      const listMatch = line.match(/^[-*]\s+(.*)/);
       if (listMatch) {
         if (!inList) { result += '<ul>'; inList = true; }
         result += `<li>${listMatch[1]}</li>`;

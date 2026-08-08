@@ -178,6 +178,10 @@ Response rendered in widget with formatting
 | GET | `/api/health` | - | Health check |
 | POST | `/api/leads` | 10/min | Submit a lead |
 | GET | `/api/leads/:clientId` | - | Get leads for a client |
+| POST | `/api/admin/login` | 5/15min | Admin login (returns JWT) |
+| GET | `/api/admin/clients` | 30/min | List clients (auth) |
+| POST | `/api/admin/clients` | 10/hour | Create a client (auth) |
+| PUT | `/api/admin/clients/:id` | 10/hour | Update a client (auth) |
 
 ## Security
 
@@ -185,7 +189,8 @@ Response rendered in widget with formatting
 - **Rate limiting** on all endpoints
 - **Input validation** — max 2000 chars, 10KB body limit
 - **CORS** configurable per deployment
-- **No database required** — client data lives in memory
+- **JWT auth** for admin endpoints (HS256, bcrypt password verification)
+- **No database required** — client configs load from memory or `data/clients/`
 
 ## Development
 
@@ -193,14 +198,15 @@ Response rendered in widget with formatting
 git clone https://github.com/hey-amanthakur/chat-bot.git
 cd chat-bot
 npm install
-npm run dev
+npm run build:widget   # Build the widget bundle first
+npm run dev            # Start the server
 ```
 
 ### Commands
 
 ```bash
-npm run dev          # Start the server
-npm run build        # Build all packages
+npm run dev          # Build the server and start it with watch mode
+npm run build        # Build server + widget + copy into dist/
 npm run lint         # Lint
 npm test             # Run tests
 ```
@@ -208,20 +214,19 @@ npm test             # Run tests
 ### Tests
 
 ```bash
-cd apps/api-gateway
-npm test                           # Unit tests (73 tests)
-npx jest --config jest-e2e.config.js  # E2E tests (15 tests)
+npm test             # Unit + e2e tests via node:test (57 tests)
 ```
 
 ## Tech Stack
 
-- **Server:** NestJS
+- **Server:** Plain Node.js (`node:http`, `node:crypto`, global `fetch`)
 - **Widget:** Vanilla TypeScript + Rollup
 - **LLM:** OpenRouter (any model)
-- **Auth:** JWT + bcrypt
-- **Rate Limiting:** @nestjs/throttler
-- **Validation:** class-validator
-- **Build:** Turborepo
+- **Auth:** JWT (HS256) + bcrypt
+- **Rate Limiting:** In-memory token bucket
+- **Validation:** Custom class-validator-style validators
+- **Tests:** `node:test`
+- **Runtime dependencies:** none (zero — dev/build deps only)
 
 ## License
 

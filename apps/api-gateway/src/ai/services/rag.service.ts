@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
+
+export type FsLike = Pick<
+  typeof fs,
+  'existsSync' | 'readFileSync' | 'writeFileSync' | 'mkdirSync' | 'readdirSync' | 'statSync'
+>;
 
 const DEFAULT_KB = {
   name: 'Business',
@@ -14,19 +17,25 @@ const DEFAULT_KB = {
   hours: [],
 };
 
-@Injectable()
+export interface RagDeps {
+  dataDir?: string;
+  fs?: FsLike;
+}
+
 export class RagService {
   private readonly dataDir: string;
+  private readonly fs: FsLike;
   private memoryClients: Record<string, Record<string, any>> = {};
 
-  constructor(private readonly configService: ConfigService) {
-    // DATA_DIR env var → package-relative path → CWD-relative (dev fallback)
+  constructor(deps: RagDeps = {}) {
     this.dataDir =
-      this.configService.get<string>('DATA_DIR') ||
-      path.join(__dirname, '..', '..', '..', 'data', 'clients');
+      deps.dataDir ??
+      process.env.DATA_DIR ??
+      path.join(process.cwd(), '..', '..', 'data', 'clients');
+    this.fs = deps.fs ?? fs;
   }
 
-  setClients(clients: Record<string, Record<string, any>>) {
+  setClients(clients: Record<string, Record<string, any>>): void {
     this.memoryClients = clients;
   }
 
@@ -37,14 +46,14 @@ export class RagService {
 
     const clientDir = path.join(this.dataDir, clientId);
 
-    if (!fs.existsSync(clientDir)) {
+    if (!this.fs.existsSync(clientDir)) {
       return { ...DEFAULT_KB };
     }
 
     const configFile = path.join(clientDir, 'config.json');
-    if (fs.existsSync(configFile)) {
-      const raw = fs.readFileSync(configFile, 'utf-8');
-      return JSON.parse(raw);
+    if (this.fs.existsSync(configFile)) {
+      const raw = this.fs.readFileSync(configFile, 'utf-8');
+      return JSON.parse(raw) as Record<string, any>;
     }
 
     return { ...DEFAULT_KB };
