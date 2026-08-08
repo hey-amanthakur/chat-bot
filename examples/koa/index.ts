@@ -1,5 +1,5 @@
 import Koa from 'koa';
-import { useChatBot } from '../../apps/api-gateway/src/adapters/koa';
+import { useChatBot } from '../../apps/server/src/adapters/koa';
 
 const app = new Koa();
 const port = 3000;

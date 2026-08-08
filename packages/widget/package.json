@@ -1,12 +1,12 @@
 {
-  "name": "@chat-bot/chat-widget",
+  "name": "@chat-bot/widget",
   "version": "1.0.0",
   "description": "Embeddable AI chat widget for local businesses — install, configure, done",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chat-bot/chat-bot.git",
-    "directory": "widgets/chat-widget"
+    "url": "https://github.com/hey-amanthakur/chat-bot.git",
+    "directory": "packages/widget"
   },
   "keywords": [
     "chat",

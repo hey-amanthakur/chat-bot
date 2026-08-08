@@ -9,7 +9,7 @@ export class HealthService {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
-      service: 'api-gateway',
+      service: 'server',
     };
   }
 }

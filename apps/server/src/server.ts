@@ -72,7 +72,7 @@ export function createChatServer(options: ServerOptions = {}): http.Server {
     options.widgetDist ??
     (fs.existsSync(dockerWidgetDist)
       ? dockerWidgetDist
-      : path.join(root, 'widgets', 'chat-widget', 'dist'));
+      : path.join(root, 'packages', 'widget', 'dist'));
 
   return http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', 'http://localhost');

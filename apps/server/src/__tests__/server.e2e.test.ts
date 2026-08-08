@@ -94,7 +94,7 @@ test('GET /api/health returns ok', async () => {
   assert.strictEqual(res.status, 200);
   const data = await res.json();
   assert.strictEqual(data.status, 'ok');
-  assert.strictEqual(data.service, 'api-gateway');
+  assert.strictEqual(data.service, 'server');
 });
 
 test('POST /api/chat detects a lead and does not call OpenRouter', async () => {

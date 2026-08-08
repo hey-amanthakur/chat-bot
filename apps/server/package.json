@@ -1,5 +1,5 @@
 {
-  "name": "@chat-bot/api-gateway",
+  "name": "@chat-bot/server",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
@@ -17,7 +17,9 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@chat-bot/shared": "*"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"

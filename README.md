@@ -198,34 +198,41 @@ Response rendered in widget with formatting
 git clone https://github.com/hey-amanthakur/chat-bot.git
 cd chat-bot
 npm install
-npm run build:widget   # Build the widget bundle first
-npm run dev            # Start the server
+npm run build
+npm run dev
+```
+
+### Project Structure
+
+```
+apps/
+  server/         # Node.js server (zero-dependency core)
+packages/
+  widget/         # Embeddable JS widget (TypeScript + Rollup)
+  shared/         # Common types and logic
+data/             # Client knowledge bases (JSON/Markdown)
+examples/         # Integration examples (Express, Fastify, etc.)
 ```
 
 ### Commands
 
 ```bash
-npm run dev          # Build the server and start it with watch mode
-npm run build        # Build server + widget + copy into dist/
-npm run lint         # Lint
-npm test             # Run tests
-```
-
-### Tests
-
-```bash
-npm test             # Unit + e2e tests via node:test (57 tests)
+npm run build        # Build shared, server, and widget
+npm run dev          # Start the server in watch mode
+npm test             # Run test suites in the server workspace
+npm run clean        # Remove all build artifacts and node_modules
 ```
 
 ## Tech Stack
 
+- **Monorepo:** npm Workspaces
 - **Server:** Plain Node.js (`node:http`, `node:crypto`, global `fetch`)
 - **Widget:** Vanilla TypeScript + Rollup
 - **LLM:** OpenRouter (any model)
 - **Auth:** JWT (HS256) + bcrypt
 - **Rate Limiting:** In-memory token bucket
-- **Validation:** Custom class-validator-style validators
-- **Tests:** `node:test`
+- **Validation:** Custom zero-dependency validators
+- **Tests:** `node:test` (70 tests)
 - **Runtime dependencies:** none (zero — dev/build deps only)
 
 ## License

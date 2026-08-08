@@ -1,5 +1,5 @@
 import express from 'express';
-import { useChatBot } from '../../apps/api-gateway/src/adapters/express';
+import { useChatBot } from '../../apps/server/src/adapters/express';
 
 const app = express();
 const port = 3000;

@@ -30,13 +30,14 @@
     "dist"
   ],
   "scripts": {
-    "build:widget": "cd widgets/chat-widget && npx rollup -c",
-    "build:server": "cd apps/api-gateway && npm run build",
-    "build:copy": "rm -rf dist && mkdir -p dist/widgets && cp -r apps/api-gateway/dist/* dist/ && cp widgets/chat-widget/dist/* dist/widgets/",
-    "build": "npm run build:server && npm run build:widget && npm run build:copy",
-    "dev": "cd apps/api-gateway && npm run dev",
-    "test": "cd apps/api-gateway && npm test",
-    "clean": "rm -rf dist node_modules apps/api-gateway/dist apps/api-gateway/dist-test widgets/chat-widget/dist"
+    "build:shared": "npm run build -w @chat-bot/shared",
+    "build:widget": "npm run build -w @chat-bot/widget",
+    "build:server": "npm run build -w @chat-bot/server",
+    "build:copy": "rm -rf dist && mkdir -p dist/widgets && cp -r apps/server/dist/* dist/ && cp packages/widget/dist/* dist/widgets/",
+    "build": "npm run build:shared && npm run build:server && npm run build:widget && npm run build:copy",
+    "dev": "npm run dev -w @chat-bot/server",
+    "test": "npm test -w @chat-bot/server",
+    "clean": "rm -rf dist node_modules apps/server/dist apps/server/dist-test apps/server/node_modules packages/widget/dist packages/widget/node_modules packages/shared/dist packages/shared/node_modules"
   },
   "dependencies": {},
   "devDependencies": {
@@ -51,5 +52,9 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "npm@10.0.0"
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
