@@ -6,9 +6,11 @@ export interface OpenRouterDeps {
   fetchFn?: typeof fetch;
 }
 
-const DEFAULT_MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
+const DEFAULT_MODEL = 'google/gemma-2-9b-it:free';
 const FALLBACK_MODELS = [
-  'google/gemma-2-9b-it:free',
+  'meta-llama/llama-3.1-8b-instruct:free',
+  'google/gemma-4-31b-it:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
   'mistralai/mistral-7b-instruct:free',
   'microsoft/phi-3-mini-128k-instruct:free',
 ];
@@ -116,12 +118,20 @@ When the customer asks a question, provide a helpful answer based on this inform
           const detail = await response.text().catch(() => '');
           console.error(`OpenRouter HTTP error (${model}): ${response.status} - ${detail}`);
           
-          // Retry on 429 (Rate Limit), 404 (Not Found), 500+ (Server Errors)
-          const retryable = response.status === 429 || response.status === 404 || response.status >= 500;
+          if (response.status === 401) {
+            return "Authentication error: Your OpenRouter API key appears to be invalid.";
+          }
+          if (response.status === 403) {
+            return "Authorization error: You might not have access to the requested model or have exceeded your quota.";
+          }
+
+          // Retry on 429 (Rate Limit), 404 (Not Found), 500+ (Server Errors), 408 (Timeout)
+          const retryable = response.status === 429 || response.status === 404 || response.status >= 500 || response.status === 408;
           if (retryable && models.indexOf(model) < models.length - 1) {
+            console.log(`Retrying with next model after ${response.status}...`);
             continue;
           }
-          return "I'm experiencing a temporary issue. Please try again in a moment.";
+          return `I'm experiencing a temporary issue (${response.status}). Please try again in a moment.`;
         }
 
         const data = (await response.json()) as {
@@ -131,9 +141,10 @@ When the customer asks a question, provide a helpful answer based on this inform
       } catch (error) {
         console.error(`OpenRouter error (${model}): ${error instanceof Error ? error.message : String(error)}`);
         if (models.indexOf(model) < models.length - 1) {
+          console.log(`Retrying with next model after network error...`);
           continue;
         }
-        return "I'm having trouble connecting right now. Please try again later.";
+        return `I'm having trouble connecting right now (${error instanceof Error ? error.message : 'Unknown error'}). Please try again later.`;
       }
     }
 
