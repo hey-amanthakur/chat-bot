@@ -3,7 +3,7 @@ import { HttpError } from './errors';
 import type { RouteContext } from './types';
 import type { Env } from '../config';
 
-export const MAX_BODY_BYTES = 10 * 1024;
+const MAX_BODY_BYTES = 10 * 1024;
 
 export function isCorsAllowed(env: Env, origin: string): boolean {
   if (env.allowedOrigins) return env.allowedOrigins.includes(origin);

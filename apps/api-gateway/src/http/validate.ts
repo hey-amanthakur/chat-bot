@@ -1,10 +1,10 @@
 import { HttpError, ValidationError } from './errors';
 
-export function fail(message: string): never {
+function fail(message: string): never {
   throw new ValidationError(message);
 }
 
-export function isObject(value: unknown): value is Record<string, unknown> {
+function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -86,4 +86,3 @@ export function expectEnum(
   return value;
 }
 
-export { HttpError };
