@@ -68,11 +68,15 @@ export function createChatServer(options: ServerOptions = {}): http.Server {
 
   const root = options.projectRoot ?? projectRoot();
   const dockerWidgetDist = path.join(root, 'widgets-dist');
+  const sourceWidgetDist = path.join(root, 'packages', 'widget', 'dist');
+  const publishedWidgetDist = path.join(root, 'dist', 'widgets');
   const widgetDist =
     options.widgetDist ??
     (fs.existsSync(dockerWidgetDist)
       ? dockerWidgetDist
-      : path.join(root, 'packages', 'widget', 'dist'));
+      : fs.existsSync(sourceWidgetDist)
+        ? sourceWidgetDist
+        : publishedWidgetDist);
 
   return http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', 'http://localhost');

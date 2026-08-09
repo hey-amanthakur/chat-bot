@@ -1,6 +1,6 @@
 {
   "name": "@hey-amanthakur/chat-bot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Embeddable AI chatbot for local businesses — install, configure, done",
   "license": "MIT",
   "repository": {
@@ -22,6 +22,30 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./express": {
+      "types": "./dist/adapters/express.d.ts",
+      "import": "./dist/adapters/express.js",
+      "require": "./dist/adapters/express.js",
+      "default": "./dist/adapters/express.js"
+    },
+    "./fastify": {
+      "types": "./dist/adapters/fastify.d.ts",
+      "import": "./dist/adapters/fastify.js",
+      "require": "./dist/adapters/fastify.js",
+      "default": "./dist/adapters/fastify.js"
+    },
+    "./koa": {
+      "types": "./dist/adapters/koa.d.ts",
+      "import": "./dist/adapters/koa.js",
+      "require": "./dist/adapters/koa.js",
+      "default": "./dist/adapters/koa.js"
+    },
+    "./nestjs": {
+      "types": "./dist/adapters/nestjs.d.ts",
+      "import": "./dist/adapters/nestjs.js",
+      "require": "./dist/adapters/nestjs.js",
+      "default": "./dist/adapters/nestjs.js"
     },
     "./widget": "./dist/widgets/chat-widget.min.js",
     "./widget.esm": "./dist/widgets/chat-widget.esm.js"
@@ -47,6 +71,7 @@
     "@rollup/plugin-typescript": "^11.0.0",
     "@types/node": "^20.0.0",
     "rollup": "^4.0.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.8.3"
   },
   "engines": {

@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { useChatBot } from '../../apps/server/src/adapters/fastify';
+import { useChatBot } from '@hey-amanthakur/chat-bot/fastify';
 
 const fastify = Fastify({ logger: true });
 const port = 3000;

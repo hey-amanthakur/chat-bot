@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { Module } from '@nestjs/common';
-import { useChatBot } from '../../apps/server/src/adapters/nestjs';
+import { useChatBot } from '@hey-amanthakur/chat-bot/nestjs';
 
 @Module({})
 class AppModule {}

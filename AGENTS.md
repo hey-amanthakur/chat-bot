@@ -126,6 +126,6 @@ npx fallow fix           # Apply changes
 
 **Known false positives in this repo:**
 - `demo.html` — HTML file with script tags, not a JS import
-- Rollup plugins — in `widgets/chat-widget/package.json`, cross-workspace blind spot
+- Rollup plugins — in `packages/widget/package.json`, cross-workspace blind spot
 - `src/__tests__/` — compiled to `dist-test/` via `tsconfig.spec.json`, not importable by the main build
 - `src/scripts/hash-password.ts` — CLI utility run from `dist/`, not imported
